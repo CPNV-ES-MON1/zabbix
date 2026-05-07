@@ -1,0 +1,26 @@
+title Flowchart
+direction right
+
+ALERTING SYSTEM [icon: alert, color: red]
+
+TICKETING SERVICE 10.0.3.14 [icon: ticket-check, color: blue]
+
+Private-Subnet-VM [color: purple] {
+  MON-SRV-LIN 10.0.3.10 [icon: linux]
+  ZABBIX{
+  MON-CLI-LIN 10.0.3.11 [icon: debian]
+  MON-CLI-WIN 10.0.3.12 [icon: windows]
+  }
+  DOCKER ENVIRONEMENT [color: orange] {
+  API-GATEWAY 10.0.3.13 [icon: docker]
+  CONT-1 [icon: docker]
+  CONT-2 [icon: docker]
+}
+}
+MON-SRV-LIN 10.0.3.10 <> MON-CLI-WIN 10.0.3.12: 10050-TCP [textSize: small]
+MON-SRV-LIN 10.0.3.10 <> MON-CLI-LIN 10.0.3.11: 10050-TCP [textSize: small]
+ALERTING SYSTEM <> MON-SRV-LIN 10.0.3.10: 443-HTTPS (Webhook) [color: green]
+TICKETING SERVICE 10.0.3.14 > MON-SRV-LIN 10.0.3.10: 443-HTTPS [color: green]
+API-GATEWAY 10.0.3.13 > CONT-1
+API-GATEWAY 10.0.3.13 > CONT-2
+MON-SRV-LIN 10.0.3.10 <> API-GATEWAY 10.0.3.13: 10050-TCP
