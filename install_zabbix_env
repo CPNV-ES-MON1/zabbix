@@ -1,0 +1,64 @@
+#!bin/bash
+#Install pour Zabbix (version 7.0 LTS sur machine Debian 12)
+
+set -e #cette commande c'est au cas où il y a une commande qui échoue, le script doit stopper
+
+DB_PASSWORD="Pa$$w0rd" #C'est la variable pour stocker le mot de passe
+
+#Le dépôt Zabbix
+
+#télécharge le paquet qui ajoute le dépôt de Zabbix
+wget -q https://repo.zabbix.com/zabbix/7.0/debian/pool/main/z/zabbix-release/zabbix-release_latest_7.0+debian12_all.deb
+#Installe le paquet
+dpkg -i zabbix-release_latest_7.0+debian12_all.deb
+apt update -q #Met à jour la liste des paquets pour le nouveau dépôt
+
+#Installation
+
+#Installation des packages nécessaires au fonctionnement de Zabbix
+#mariadb-server = BDD, zabbix-server-mysql = moteur principal Zabbix, zabbix-frontend-php = Interface Web en PHP, zabbix-apache-conf = Config Apache pour exposer l'interface Web, zabbix-sql-scripts =  script SQL pour le schéma, zabbix-agent2  = agent
+apt install -y mariadb-server zabbix-server-mysql zabbix-frontend-php zabbix-apache-conf zabbix-sql-scripts zabbix-agent2
+
+#Démarrage de MariaDB dans l'immédiat et active automatiquement au démarrage
+systemctl enable --now mariadb
+
+#Création de la base de données
+mysql -uroot <<EOF2
+CREATE DATABASE zabbix CHARACTER SET utf8mb4 COLLATE utf8mb4_bin;
+CREATE USER 'zabbix'@'localhost' IDENTIFIED BY '${DB_PASSWORD}';
+GRANT ALL PRIVILEGES ON zabbix.* TO 'zabbix'@'localhost';
+SET GLOBAL log_bin_trust_function_creators = 1;
+EOF2
+
+#Schéma
+#ça décompresse le schéma fourni par Zabbix et l'injecte dans la base (tables, index, données, etc...)
+zcat /usr/share/zabbix-sql-scripts/mysql/server.sql.gz | mysql --default-character-set=utf8mb4 -uzabbix -p${DB_PASSWORD} zabbix
+
+#Désactivation option temporaire (Quand le binary log est activé, MySQL bloque par sécurité la création de fonctions/procédures stockées, car elles pourraient modifier les données et causer des problèmes de réplication)
+mysql -uroot -e "SET GLOBAL log_bin_trust_function_creators = 0;"
+
+#Mot de passe dans la config
+#Donne le mot de passe à Zabbix pour se co à la base
+sed -i "s/^# DBPassword=/DBPassword=${DB_PASSWORD}/" /etc/zabbix/zabbix_server.conf
+
+#Configuration d'un accès via adresse IP
+cat > /etc/apache2/conf-available/zabbix-access.conf <<EOF3
+<VirtualHost *:80>
+    ServerName MON-SRV-LIN
+    ServerAlias 10.229.36.236
+    DocumentRoot /usr/share/zabbix
+    Include /etc/apache2/conf-enabled/zabbix.conf
+</VirtualHost>
+EOF3
+#Active la conf Apache qui a été créée
+a2enconf zabbix-access
+
+#Démmarer les services
+#Redémarre les services pour appliquer la configuration
+systemctl restart zabbix-server zabbix-agent2 apache2
+#Active automatiquement au démarrage
+systemctl enable zabbix-server zabbix-agent2 apache2
+
+
+#ça c'est juste un test pour démontrer la fin du script
+echo "c'est bon, accès via http://MON-SRV-LIN/zabbix"
