@@ -2,59 +2,50 @@
 
 ## Description
 
-This project is designed to .... and the main features are ...
-
-## Getting Started
-
-### Prerequisites
-
-List all dependencies and their version needed to run the project as :
-
+### Prérequis
 |Role|Tool|Version|
 |:--|:--|:--|
 |VCS|Git SCM|[2.54 or higher](https://git-scm.com/install/)|
 |IaC|Terraform|[1.15 or higher](https://developer.hashicorp.com/terraform/install)|
 |IDE|VS Code|[1.118 or higher](https://code.visualstudio.com/thank-you?dv=linux64_deb)|
 |Virtualization|Docker Engine|[v29 or higher](https://docs.docker.com/engine/install/)|
+### Prérequis installation Zabbix
+|Role|Tool|Version|
+|:--|:--|:--|
+|Monitoring|Zabbix Server|7.0|
+|Database|MariaDB|10.11|
+|Web Server|Apache|2.4|
+|Language|PHP|8.2|
 
 ### Configuration
 
-* Cloud Provider Credentials
-
-You will need acces to the cloud provider including this following permissions:
-
-```
-         "ec2:DescribeInstances", 
-         "ec2:DescribeImages",
-         "ec2:DescribeTags", 
-         "ec2:DescribeSnapshots"
-```
-
-* Licence
-
-A licence need to be requested to info@myproduct.com.
-
-
 ## Deployment
-
+### Logs
 ### On dev environment
-
-* Set the environments variables
-
+Créer les scripts
 ```
-cp sample.env dev.env
+sudo nano install_dependencies.sh
+"..." install_zabbix.sh
+"..." main.sh
+#Compléter les scripts
 ```
-
-Update all variable according to your setup.
-
-
+Lancer l'installation
+```
+chmod +x main.sh install_dependencies.sh install_zabbix.sh
+sudo bash main.sh
+```
 ### On stage environment
 
-* Set the environments variables
-
-```
-cp sample.env stage.env
-```
+#### Emplacement logs dépendances
+Pour afficher les logs, insérer avant "sudo tail -f"
+| Service | Fichier |
+|:--|:--|
+| Zabbix Server | `/var/log/zabbix/zabbix_server.log` |
+| Zabbix Agent2 | `/var/log/zabbix/zabbix_agent2.log` |
+| Apache (accès) | `/var/log/apache2/access.log` |
+| Apache (erreurs) | `/var/log/apache2/error.log` |
+| MariaDB | `/var/log/mysql/error.log` |
+| Système | `/var/log/syslog` |
 
 Update all variable according to your setup.
 
