@@ -14,4 +14,4 @@ apt update -q
 # apache2        : serveur web (version 2.4)
 # php            : langage PHP pour l'interface Zabbix (version 8.2 sur Debian 12)
 # php-mysql      : extension PHP pour la connexion à MariaDB
-apt install -y mariadb-server apache2 php php-mysql
+apt install -y mariadb-server=1:10.11* apache2=2.4* php8.2 php8.2-mysql
