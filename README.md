@@ -31,7 +31,7 @@ sudo nano install_dependencies.sh
 ```
 Lancer l'installation
 ```
-chmod +x main.sh install_dependencies.sh install_zabbix.sh
+chmod +x main.sh install_depencies_env.sh install_zabbix_env.sh
 sudo bash main.sh
 ```
 ### On stage environment
