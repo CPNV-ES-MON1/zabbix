@@ -3,19 +3,19 @@
 ## Description
 
 ### Prérequis
-|Role|Tool|Version|
+|Rôle|Outil|Version|
 |:--|:--|:--|
 |VCS|Git SCM|[2.54 or higher](https://git-scm.com/install/)|
 |IaC|Terraform|[1.15 or higher](https://developer.hashicorp.com/terraform/install)|
 |IDE|VS Code|[1.118 or higher](https://code.visualstudio.com/thank-you?dv=linux64_deb)|
 |Virtualization|Docker Engine|[v29 or higher](https://docs.docker.com/engine/install/)|
 ### Prérequis installation Zabbix
-|Role|Tool|Version|
-|:--|:--|:--|
-|Monitoring|Zabbix Server|7.0|
-|Database|MariaDB|10.11|
-|Web Server|Apache|2.4|
-|Language|PHP|8.2|
+|Rôle|Outil|Version|Lien|
+|:--|:--|:--|:--|
+|Monitoring|Zabbix Server|7.0|[Zabbix](https://www.zabbix.com/life_cycle_and_release_policy)|
+|Database|MariaDB|10.11|[MariaDB](https://mariadb.com/docs/release-notes/community-server/10.11/what-is-mariadb-1011)|
+|Web Server|Apache|2.4|[Apache](https://httpd.apache.org/download.cgi)|
+|Language|PHP|8.2|[PHP](https://www.zabbix.com/documentation/7.0/en/manual/installation/requirements)
 
 ### Configuration
 
