@@ -34,20 +34,74 @@ Lancer l'installation
 chmod +x main.sh install_depencies_env.sh install_zabbix_env.sh
 sudo bash main.sh
 ```
+Le script "install_zabbix_env.sh" demandera interactivement :
+* Le nom de machine
+* Le nom de la base de données
+* L'utilisateur MariaDB
+* Le mot de passe MariaDB
+
 ### On stage environment
 
 #### Emplacement logs dépendances
 Pour afficher les logs, insérer avant "sudo tail -f"
+## Logs des services
+
+### Identification des logs
+
 | Service | Fichier |
-|:--|:--|
+|---|---|
 | Zabbix Server | `/var/log/zabbix/zabbix_server.log` |
 | Zabbix Agent2 | `/var/log/zabbix/zabbix_agent2.log` |
 | Apache (accès) | `/var/log/apache2/access.log` |
 | Apache (erreurs) | `/var/log/apache2/error.log` |
-| MariaDB | `/var/log/mysql/error.log` |
+| MariaDB | `sudo journalctl -u mariadb` |
 | Système | `/var/log/syslog` |
 
-Update all variable according to your setup.
+### Contenu des logs
+
+- **Zabbix Server** : démarrage/arrêt, connexions BDD, erreurs de collecte, alertes
+- **Zabbix Agent2** : métriques collectées, connexions serveur, erreurs d'items
+- **Apache access.log** : requêtes HTTP vers l'interface web (IP, URL, code réponse)
+- **Apache error.log** : erreurs PHP, pages introuvables, problèmes de config
+- **MariaDB** : démarrage/arrêt, erreurs de requêtes, problèmes de connexion
+- **Syslog** : logs système globaux (kernel, services, authentification)
+
+```bash
+# Vérifier la config de rotation Zabbix
+cat /etc/logrotate.d/zabbix-server
+# Vérifier la config de rotation Apache
+cat /etc/logrotate.d/apache2
+# Vérifier la config de rotation MariaDB
+cat /etc/logrotate.d/mysql-server
+# Tester que logrotate fonctionne
+sudo logrotate --debug /etc/logrotate.conf
+```
+### Niveau de verbosité
+**Zabbix Server** — `/etc/zabbix/zabbix_server.conf`
+```
+# 0=désactivé, 1=critique, 2=erreur, 3=warning, 4=debug, 5=trace
+DebugLevel=3
+```
+```bash
+sudo systemctl restart zabbix-server
+```
+**Apache** — `/etc/apache2/apache2.conf`
+```
+# emerg / alert / crit / error / warn / notice / info / debug
+LogLevel warn
+```
+```bash
+sudo systemctl restart apache2
+```
+**MariaDB** — `/etc/mysql/mariadb.conf.d/50-server.cnf`
+```
+# 1=erreurs, 2=warnings, 3=infos
+log_warnings = 2
+```
+```bash
+sudo systemctl restart mariadb
+```
+
 
 ## Directory structure
 
