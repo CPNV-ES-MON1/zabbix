@@ -24,8 +24,8 @@
 ### On dev environment
 Créer les scripts
 ```
-sudo nano install_dependencies.sh
-"..." install_zabbix.sh
+sudo nano install_depencies_env.sh
+"..." install_zabbix_env.sh
 "..." main.sh
 #Compléter les scripts
 ```
