@@ -1,65 +1,120 @@
-title Flowchart
+title Monitoring & Ticketing Infrastructure
 direction right
 
-Notify.Events [icon: package]
-Agent 2 [icon: agent, label: Agent 2 (Langage Go)]
-Private-Subnet-VM [color: purple, textSize: medium] {
-   MON-SRV-TICKETING SERVICE
-  MON-SRV-LIN 10.0.3.10 [icon: linux,]
-  ZABBIX (Langage C){
-    Apache [icon: apache]
-    MySQL [icon: mysql]
-    ALERTING SYSTEM [color: red, icon: alert]
+SYS-ADMIN [icon: user, label: System Administrator]
+ENDUSER [icon: user, label: End User]
+SOCIAL-NETWORK [icon: signal, label: Social Network]
+Notify.Events [icon: package, label: Notification Service]
+
+CLOUD-PROVIDER {
+  REGION {
+    VPC [icon: aws-vpc] {
+      IGW [icon: aws-internet-gateway]
+
+      BASTILLON {
+        SSH-SRV [icon: debian, label: SSH Server]
       }
-      Ticketing SYSTEM [color: blue, textSize: medium] {
-    PostgreSQL [icon: sql-server, label: PostgreSQL]
-    Apache_1 [icon: apache, label: Apache]
-    Redis [label: Redis, icon: redis]
-    Elasticsearch [icon: Elasticsearch, label: Elasticsearch]
-    zammad-web [icon: server, label: zammad-web (Langage Ruby)]
-    zammad-worker [icon: server, label: zammad-worker (Langage Ruby)]
-    zammad-websocket [icon: server, label: zammad-websocket (Langage Ruby)]
+
+      DMZ {
+        RPROXY-SRV [icon: nginx, label: RPROXY-SRV]
       }
-  MON-CLI-LIN 10.0.3.11 [icon: debian]
-  MON-CLI-WIN 10.0.3.12 [icon: windows]
-  Agent 1 [icon: agent, label: Agent 1 (Langage C)]
-  Agent 1_1 [icon: agent, label: Agent 1 (Langage C)]
- 
+
+      Private-Subnet-VM [color: purple, textSize: medium] {
+
+        MON-SRV-LIN 10.0.3.10 [icon: debian, color: green] {
+          ZABBIX-SERVER [icon: server, label: Zabbix Server (C)]
+          APACHE-ZBX [icon: apache, label: Apache Frontend]
+          MYSQL-ZBX [icon: mysql, label: MySQL Database]
+          SERVER-REQ [icon: list, label: Requirements
+          CPU: 4 vCPU
+          RAM: 8 GB
+          Storage: 20 GB SSD
+          OS: Debian 12]
+        }
+
+        MON-SRV-TICKETING [color: blue, textSize: medium, icon: DOCKER] {
+          NGINX-ZAMMAD [icon: nginx, label: Nginx Reverse Proxy]
+          ZAMMAD-RAILSSERVER [icon: server, label: zammad-railsserver (Ruby/Puma)]
+          ZAMMAD-SCHEDULER [icon: server, label: zammad-scheduler (Ruby)]
+          ZAMMAD-WEBSOCKET [icon: server, label: zammad-websocket (Ruby)]
+          POSTGRESQL [icon: sql-server, label: PostgreSQL]
+          REDIS [icon: redis]
+          ELASTICSEARCH [icon: elasticsearch]
+          ZAMMAD-MEMCACHED [icon: server, label: zammad-memcached]
+          ZAMMAD-BACKUP [icon: server, label: zammad-backup]
+          ZAMMAD-INIT [icon: server, label: zammad-init]
+        }
+
+        MON-CLI-LIN 10.0.3.11 [icon: debian]
+        MON-CLI-WIN 10.0.3.12 [icon: windows]
+
+        Agent-1 [icon: agent, label: Zabbix Agent (C)]
+        Agent-2 [icon: agent, label: Zabbix Agent 2 (Go)]
+
+        SNMP-DEVICES [color: orange, label: SNMP Devices] {
+          SWITCH [icon: router]
+          ROUTER [icon: router]
+          FIREWALL [icon: firewall]
+        }
+
+        DOCKER-ENVIRONMENT [color: orange, textSize: medium] {
+          API-GATEWAY 10.0.3.13 [icon: docker]
+          CONT-1 [icon: docker]
+          CONT-2 [icon: docker]
+        }
+      }
+    }
   }
-  DOCKER ENVIRONEMENT [color: orange, textSize: medium] {
-  API-GATEWAY 10.0.3.13 [icon: docker]
-  CONT-1 [icon: docker]
-  CONT-2 [icon: docker]
 }
-SYS-ADMIN [icon: user]
-ENDUSER [icon: user]
-SOCIAL-NETWORK [icon: signal]
-MON-SRV-LIN 10.0.3.10 <> Agent 1: 10050/10051-TCP [textSize: small]
-MON-SRV-LIN 10.0.3.10 <> Agent 1_1: 10050/10051-TCP [textSize: small]
-MON-SRV-TICKETING SERVICE < MON-SRV-LIN 10.0.3.10: 443-HTTPS (Webhook) [color: black]
+
+// Accès admin & utilisateurs
+SYS-ADMIN > IGW: SSH 22
+IGW > SSH-SRV: SSH 22
+SSH-SRV > Private-Subnet-VM: SSH 22 / RDP 3389
+SYS-ADMIN > IGW: HTTPS 443
+IGW > RPROXY-SRV: HTTPS 443
+RPROXY-SRV > APACHE-ZBX: HTTP 8080
+RPROXY-SRV > NGINX-ZAMMAD: HTTP 8080
+
+// Zabbix interne
+APACHE-ZBX <> ZABBIX-SERVER: Local
+ZABBIX-SERVER <> MYSQL-ZBX: TCP 3306
+
+// Alertes
+ZABBIX-SERVER > Notify.Events: HTTPS 443
+Notify.Events > SOCIAL-NETWORK: HTTPS 443
+SOCIAL-NETWORK > SYS-ADMIN
+SOCIAL-NETWORK > ENDUSER
+
+// Agents
+ZABBIX-SERVER > Agent-1: TCP 10050
+ZABBIX-SERVER > Agent-2: TCP 10050
+Agent-1 > ZABBIX-SERVER: TCP 10051
+Agent-2 > ZABBIX-SERVER: TCP 10051
+Agent-1 > MON-CLI-WIN 10.0.3.12: Local
+Agent-2 > MON-CLI-LIN 10.0.3.11: Local
+
+// SNMP
+ZABBIX-SERVER > SWITCH: SNMP UDP 161
+ZABBIX-SERVER > ROUTER: SNMP UDP 161
+ZABBIX-SERVER > FIREWALL: SNMP UDP 161
+
+// Zammad interne
+NGINX-ZAMMAD <> ZAMMAD-RAILSSERVER: HTTP 3000
+NGINX-ZAMMAD <> ZAMMAD-WEBSOCKET: WebSocket 6042
+ZAMMAD-RAILSSERVER <> POSTGRESQL: TCP 5432
+ZAMMAD-SCHEDULER <> POSTGRESQL: TCP 5432
+ZAMMAD-RAILSSERVER <> REDIS: TCP 6379
+ZAMMAD-SCHEDULER <> REDIS: TCP 6379
+ZAMMAD-WEBSOCKET <> REDIS: TCP 6379
+ZAMMAD-RAILSSERVER <> ELASTICSEARCH: TCP 9200
+ZAMMAD-SCHEDULER <> ELASTICSEARCH: TCP 9200
+ZAMMAD-RAILSSERVER <> ZAMMAD-MEMCACHED: TCP 11211
+ZAMMAD-SCHEDULER <> ZAMMAD-MEMCACHED: TCP 11211
+ZABBIX-SERVER > MON-SRV-TICKETING: HTTPS 443 (Webhook)
+
+// Docker
 API-GATEWAY 10.0.3.13 > CONT-1
 API-GATEWAY 10.0.3.13 > CONT-2
-MON-SRV-LIN 10.0.3.10 > MySQL: 3306 / 5432-TCP
-MySQL <> Apache: TCP 3306
-Apache <> ENDUSER: 443-HTTPS
-ALERTING SYSTEM > Notify.Events: 443-HTTPS / TCP
-Notify.Events > SOCIAL-NETWORK: 443-HTTPS
-Apache <> SYS-ADMIN: 443-HTTPS
-MON-SRV-LIN 10.0.3.10 > ALERTING SYSTEM: 443-HTTPS / TCP [color: black]
-Agent 1 > MON-CLI-WIN 10.0.3.12: local
-Agent 1_1 > MON-CLI-LIN 10.0.3.11: local
-Agent 2 > API-GATEWAY 10.0.3.13: local
-MON-SRV-LIN 10.0.3.10 > Agent 2: 10050/10051-TCP
-MON-SRV-TICKETING SERVICE > Ticketing SYSTEM: [color: black]
-PostgreSQL <> Apache_1: 5432/3306-TCP
-Apache_1 <> zammad-web: HTTP/socket [textSize: small]
-Apache_1 <> zammad-websocket: WebSocket [textSize: small]
-zammad-web <> Redis: TCP 6379 [textSize: small]
-zammad-web <> Elasticsearch: TCP 9200 [textSize: small]
-zammad-websocket <> Redis: TCP 6379 [textSize: small]
-zammad-worker <> PostgreSQL: TCP 5432 [textSize: small]
-zammad-worker <> Redis: TCP 6379 [textSize: small]
-zammad-worker <> Elasticsearch: TCP 9200 [textSize: small]
-SOCIAL-NETWORK > SYS-ADMIN
-SOCIAL-NETWORK > ENDUSER: 443-HTTPS
-Apache_1 > SYS-ADMIN: 443-HTTPS [color: black]
+ZABBIX-SERVER > API-GATEWAY 10.0.3.13: TCP 10050
+API-GATEWAY 10.0.3.13 > Agent-2: Local
