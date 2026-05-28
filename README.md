@@ -77,7 +77,7 @@ cat /etc/logrotate.d/mysql-server
 sudo logrotate --debug /etc/logrotate.conf
 ```
 ### Niveau de verbosité
-**Zabbix Server** — `/etc/zabbix/zabbix_server.conf`
+**Zabbix Server** - `/etc/zabbix/zabbix_server.conf` - [Debug Level Zabbix](https://www.zabbix.com/documentation/7.0/en/manual/appendix/config/zabbix_server)
 ```
 # 0=désactivé, 1=critique, 2=erreur, 3=warning, 4=debug, 5=trace
 DebugLevel=3
@@ -85,7 +85,7 @@ DebugLevel=3
 ```bash
 sudo systemctl restart zabbix-server
 ```
-**Apache** — `/etc/apache2/apache2.conf`
+**Apache** - `/etc/apache2/apache2.conf` - [Apache](https://httpd.apache.org/docs/2.4/mod/core.html#loglevel)
 ```
 # emerg / alert / crit / error / warn / notice / info / debug
 LogLevel warn
@@ -93,7 +93,7 @@ LogLevel warn
 ```bash
 sudo systemctl restart apache2
 ```
-**MariaDB** — `/etc/mysql/mariadb.conf.d/50-server.cnf`
+**MariaDB** - `/etc/mysql/mariadb.conf.d/50-server.cnf` - [Log Warnings MariaDB](https://mariadb.com/docs/server/server-management/variables-and-modes/server-system-variables#log_warnings)
 ```
 # 1=erreurs, 2=warnings, 3=infos
 log_warnings = 2
