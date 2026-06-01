@@ -26,23 +26,23 @@ Créer les scripts
 ```
 sudo nano install_depencies_env.sh
 "..." install_zabbix_env.sh
-"..." main.sh
-#Compléter les scripts
+sudo nano zabbix.env
+#Compléter les scripts et le fichier .env
 ```
 Lancer l'installation
 ```
-chmod +x main.sh install_depencies_env.sh install_zabbix_env.sh
-sudo bash main.sh
+chmod +x install_depencies_env.sh install_zabbix_env.sh
+sudo bash install_depencies_env.sh
+"..." install_zabbix_env.sh
 ```
-Le script "install_zabbix_env.sh" demandera interactivement :
-* Le nom de machine
-* Le nom de la base de données
-* L'utilisateur MariaDB
-* Le mot de passe MariaDB
+Le script "install_zabbix_env.sh" fonctionne de paire avec le fichier "zabbix.env" contenant les valeurs nécessaires à l'installation :
+
+- SERVER_NAME
+- DB_NAME
+- DB_USER
+- DB_PASSWORD
 
 ### On stage environment
-
-
 ## Directory structure
 
 Here you are a sample of project structure. It's must be adapted to your stack.
