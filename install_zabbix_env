@@ -1,16 +1,23 @@
 #!/bin/bash
 # Installe et configure Zabbix 7.0 sur Debian 12
+# Utilise le fichier zabbix.env pour les données sensibles
+# Usage : sudo bash install_zabbix.sh
 
-set -e #Si l'installation plante quelque part, le script s'arrête
+set -e
 
-echo "=== Installation de Zabbix 7.0 ==="
+# Vérifie que le fichier zabbix.env existe
+if [ ! -f zabbix.env ]; then
+    echo "Fichier zabbix.env manquant. Copie zabbixzabbix.env.example en zabbix.env et remplis les valeurs."
+    exit 1
+fi
 
-# Demande les informations à l'utilisateur
-read -p "Nom de la machine (ex: MON-SRV-LIN) : " SERVER_NAME
-read -p "Nom de la base de données (ex: zabbix) : " DB_NAME
-read -p "Utilisateur MariaDB pour Zabbix (ex: zabbix) : " DB_USER
-read -s -p "Mot de passe MariaDB pour Zabbix : " DB_PASSWORD
-echo ""
+# Charge les variables depuis le fichier zabbix.env
+source zabbix.env
+
+# Vérifie que toutes les variables sont renseignées
+for var in SERVER_NAME DB_NAME DB_USER DB_PASSWORD; do
+    [ -z "${!var}" ] && echo "Variable $var manquante dans zabbix.env" && exit 1
+done
 
 # ── 1. DÉPÔT ZABBIX ──────────────────────────────────────────
 # Télécharge et installe le dépôt officiel Zabbix 7.0 pour Debian 12
@@ -70,4 +77,3 @@ systemctl restart zabbix-server zabbix-agent2 apache2
 systemctl enable zabbix-server zabbix-agent2 apache2
 
 echo "C'est bon"
-echo "Par ic : http://${SERVER_NAME}/zabbix"
