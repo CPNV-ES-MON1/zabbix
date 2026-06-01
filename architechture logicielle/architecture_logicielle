@@ -25,7 +25,7 @@ CLOUD-PROVIDER {
           Zabbix Proxy [icon: gcp-identity-aware-proxy]
           Apache Frontend [icon: apache]
           MySQL Database [icon: mysql]
-          Notification Service [icon: service]
+          Notify.Events [icon: service]
         }
 
         Zammad Ticketing Server [color: blue, textSize: medium, icon: DOCKER] {
@@ -34,20 +34,23 @@ CLOUD-PROVIDER {
           Scheduler [icon: server]
           Websocket Server [icon: server]
           POSTGRESQL [icon: sql-server, label: PostgreSQL]
-          REDIS [icon: redis]
+          Redis [icon: Redis]
           ELASTICSEARCH [icon: elasticsearch]
           Memcached [icon: server]
           Init Service [icon: server]
         }
 
-        Linux Client [icon: debian]
-        Windows Client [icon: windows]
-
-        Zabbix Agent C [icon: agent]
-        Zabbix Agent Go [icon: agent]
+        Linux Client [icon: debian]{
+        Zabbix Agent 2_1_1 [label: Zabbix Agent 2, icon: agent]
+        }
+        Windows Client [icon: windows]{
+        Zabbix Agent 2_1 [icon: agent, label: Zabbix Agent 2]
+        }
 
         Docker Environment [textSize: medium, color: orange] {
-          API Gateway [icon: docker]
+          API Gateway [icon: docker]{
+                    Zabbix Agent 2[icon: agent]
+          }
           Container 1 [icon: docker]
           Container 2 [icon: docker]
         }
@@ -71,26 +74,19 @@ Zabbix Server <> MySQL Database: TCP 3306
 
 // Alertes
 Social Network < IGW: HTTPS 443
-Social Network > End User
+Social Network > End User: HTTPS 443
 
 // Agents
-Zabbix Proxy > Zabbix Agent C: TCP 10050
-Zabbix Proxy > Zabbix Agent Go: TCP 10050
-Zabbix Agent C < Zabbix Proxy: TCP 10051
-Zabbix Agent Go < Zabbix Proxy: TCP 10051
-Zabbix Agent C > Windows Client: Local
-Zabbix Agent Go > Linux Client: Local
-
-// SNMP
+Zabbix Proxy <> Zabbix Agent 2: TCP 10050
 
 // Zammad interne
 Nginx Reverse Proxy <> Rails Server: HTTP 3000
 Nginx Reverse Proxy <> Websocket Server: WebSocket 6042
 Rails Server <> POSTGRESQL: TCP 5432
 Scheduler <> POSTGRESQL: TCP 5432
-Rails Server <> REDIS: TCP 6379
-Scheduler <> REDIS: TCP 6379
-Websocket Server <> REDIS: TCP 6379
+Rails Server <> Redis: TCP 6379
+Scheduler <> Redis: TCP 6379
+Websocket Server <> Redis: TCP 6379
 Rails Server <> ELASTICSEARCH: TCP 9200
 Scheduler <> ELASTICSEARCH: TCP 9200
 Rails Server <> Memcached: TCP 11211
@@ -100,13 +96,12 @@ Zabbix Server > Zammad Ticketing Server: HTTPS 443 (Webhook)
 // Docker
 System Administrator > IGW: SSH 22
 System Administrator > IGW: HTTPS 443
-Zabbix Agent C > Windows Client: Local
-Zabbix Agent Go > Linux Client: Local
         API Gateway > Container 1
         API Gateway > Container 2
-Zabbix Agent Go > API Gateway
-Zabbix Server > Notification Service
-Notification Service > IGW: HTTPS 443
-Social Network > System Administrator
+Zabbix Server > Notify.Events: HTTPS 443
+Notify.Events > IGW: HTTPS 443
+Social Network > System Administrator: HTTPS 443
 Zabbix Proxy > Zabbix Server: TCP 10051
 Zabbix Server > Zabbix Proxy: TCP 10050
+Zabbix Proxy <> Zabbix Agent 2_1: TCP 10050
+Zabbix Proxy <> Zabbix Agent 2_1_1: TCP 10050
