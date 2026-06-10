@@ -55,11 +55,9 @@ project-root/
 ├── config/                   # configuration (per environment)
 │   ├── dev.env
 │   ├── staging.env
-│   └── prod.env
 
 ├── bin/                      # entrypoints (what you actually run)
 │   ├── deploy.sh
-│   ├── destroy.sh
 │   └── status.sh
 
 ├── lib/                      # shared logic (like "modules")
@@ -68,33 +66,13 @@ project-root/
 │   ├── checks.sh             # preflight checks
 │   └── state.sh              # poor man's state management
 
-├── services/                 # components of your stack
-│   ├── network/
-│   │   ├── create.sh
-│   │   └── destroy.sh
-│   │
-│   ├── compute/
-│   │   ├── create.sh
-│   │   └── destroy.sh
-│   │
-│   ├── monitoring/
-│   │   ├── prometheus.sh
-│   │   ├── grafana.sh
-│   │   └── alertmanager.sh
-│   │
-│   └── security/
-│       ├── iam.sh
-│       └── secrets.sh
-
-├── state/                    # local state tracking
-│   └── deployed.json
-
 ├── scripts/                  # helpers (optional)
-│   ├── install_deps.sh
-│   └── lint.sh
-
-└── logs/
-    └── deploy.log
+│   ├── zabbix_deployment
+|   ├── agent_deployment
+|       ├── linux
+|       ├── windows
+│       ├── docker
+|   └── lint.sh
 ```
 
 ## Collaborate
