@@ -1,2 +1,2 @@
 # Afin d'éviter de donner accès aux données
-zabbix.env
+.env
