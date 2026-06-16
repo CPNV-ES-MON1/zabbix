@@ -88,3 +88,67 @@ project-root/
 ## Contact
 
 * How to get in contact with you? Discord, Trello, Issue?
+
+## Script Agent
+# Zabbix Agent 2 — Installation
+
+## Fichiers
+
+```
+.env                              → Config Linux
+.env.windows.txt                  → Config Windows
+install_zabbix_agent_linux.sh     → Installation Linux
+validate_zabbix_linux.sh          → Validation Linux
+install_zabbix_agent_windows.ps1  → Installation Windows
+validate_zabbix_windows.ps1       → Validation Windows
+```
+
+---
+
+## Configuration
+
+Remplis le `.env` (Linux) ou `.env.windows.txt` (Windows) avec ton IP serveur, le hostname et le token API, puis ouvre le port **10050/tcp** dans le Security Group AWS de l'instance.
+
+---
+
+## Linux
+
+```bash
+# Copier les fichiers sur l'instance
+scp -i ta-cle.pem .env install_zabbix_agent_linux.sh validate_zabbix_linux.sh ec2-user@<IP>:~/
+
+# Se connecter
+ssh -i ta-cle.pem ec2-user@<IP>
+
+# Installer
+chmod +x install_zabbix_agent_linux.sh validate_zabbix_linux.sh
+sudo ./install_zabbix_agent_linux.sh
+
+# Valider
+sudo ./validate_zabbix_linux.sh
+```
+
+---
+
+## Windows
+
+```powershell
+# Ouvrir PowerShell en Administrateur
+# Se placer dans le dossier des scripts, puis :
+
+Set-ExecutionPolicy Bypass -Scope Process -Force
+.\install_zabbix_agent_windows.ps1
+
+# Valider
+.\validate_zabbix_windows.ps1
+```
+
+---
+
+## Erreurs fréquentes
+
+| Erreur | Solution |
+|---|---|
+| `Fichier .env introuvable` | Lance le script depuis le dossier où se trouve le `.env` |
+| `Port 10051 inaccessible` | Ouvre le port 10051/tcp entrant sur le Security Group du serveur Zabbix |
+| `Hôte non créé via API` | Vérifie le token dans `Administration > Users > API tokens` |
