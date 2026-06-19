@@ -47,10 +47,10 @@ CLOUD-PROVIDER {
 
         Docker Environment [textSize: medium, color: orange] {
           API Gateway [icon: docker]{
-                    Zabbix Agent 2[icon: agent]
           }
           Container 1 [icon: docker]
           Container 2 [icon: docker]
+          Zabbix Agent 2 [icon: agent]
         }
       }
       "NAT / PAT" [shape: rectangle, icon: gateway]
@@ -104,3 +104,4 @@ Zabbix Server > IGW: H
 Zabbix Server > IGW: HTTP 8080 (Webhook)
 Zabbix Server > IGW: HTTP 8080 (Webhook)
 Zabbix Server > "NAT / PAT": TCP 443 (Websocket)
+API Gateway > Zabbix Agent 2
