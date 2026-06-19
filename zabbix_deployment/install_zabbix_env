@@ -1,0 +1,79 @@
+#!/bin/bash
+# Installe et configure Zabbix 7.0 sur Debian 12
+# Utilise le fichier zabbix.env pour les données sensibles
+# Usage : sudo bash install_zabbix.sh
+
+set -e
+
+# Vérifie que le fichier zabbix.env existe
+if [ ! -f zabbix.env ]; then
+    echo "Fichier zabbix.env manquant. Copie zabbixzabbix.env.example en zabbix.env et remplis les valeurs."
+    exit 1
+fi
+
+# Charge les variables depuis le fichier zabbix.env
+source zabbix.env
+
+# Vérifie que toutes les variables sont renseignées
+for var in SERVER_NAME DB_NAME DB_USER DB_PASSWORD; do
+    [ -z "${!var}" ] && echo "Variable $var manquante dans zabbix.env" && exit 1
+done
+
+# ── 1. DÉPÔT ZABBIX ──────────────────────────────────────────
+# Télécharge et installe le dépôt officiel Zabbix 7.0 pour Debian 12
+wget -q https://repo.zabbix.com/zabbix/7.0/debian/pool/main/z/zabbix-release/zabbix-release_latest_7.0+debian12_all.deb
+dpkg -i zabbix-release_latest_7.0+debian12_all.deb
+apt update -q
+
+# ── 2. PAQUETS ZABBIX ─────────────────────────────────────────
+# zabbix-server-mysql : moteur principal Zabbix (version 7.0)
+# zabbix-frontend-php : interface web en PHP
+# zabbix-apache-conf  : configuration Apache pour l'interface web
+# zabbix-sql-scripts  : scripts SQL pour créer le schéma de la base
+# zabbix-agent2       : agent qui surveille la machine locale (version 7.0)
+apt install -y zabbix-server-mysql zabbix-frontend-php zabbix-apache-conf zabbix-sql-scripts zabbix-agent2
+
+# ── 3. BASE DE DONNÉES ────────────────────────────────────────
+# Démarre MariaDB et l'active au démarrage automatique
+systemctl enable --now mariadb
+
+# Crée la base de données, l'utilisateur et ses droits
+# Active temporairement une option pour permettre l'import du schéma
+mysql -uroot <<EOF2
+CREATE DATABASE ${DB_NAME} CHARACTER SET utf8mb4 COLLATE utf8mb4_bin;
+CREATE USER '${DB_USER}'@'localhost' IDENTIFIED BY '${DB_PASSWORD}';
+GRANT ALL PRIVILEGES ON ${DB_NAME}.* TO '${DB_USER}'@'localhost';
+SET GLOBAL log_bin_trust_function_creators = 1;
+EOF2
+
+# Décompresse et importe le schéma SQL de Zabbix (peut prendre 1-2 min)
+zcat /usr/share/zabbix-sql-scripts/mysql/server.sql.gz | mysql --default-character-set=utf8mb4 -u${DB_USER} -p${DB_PASSWORD} ${DB_NAME}
+
+# Désactive l'option temporaire (bonne pratique de sécurité)
+mysql -uroot -e "SET GLOBAL log_bin_trust_function_creators = 0;"
+
+# ── 4. CONFIGURATION ZABBIX ───────────────────────────────────
+# Renseigne le mot de passe BDD dans le fichier de configuration Zabbix
+sed -i "s/^# DBPassword=/DBPassword=${DB_PASSWORD}/" /etc/zabbix/zabbix_server.conf
+
+# ── 5. CONFIGURATION APACHE ───────────────────────────────────
+# Crée un VirtualHost Apache accessible via le nom de machine
+cat > /etc/apache2/conf-available/zabbix-access.conf <<EOF3
+<VirtualHost *:80>
+    ServerName ${SERVER_NAME}
+    DocumentRoot /usr/share/zabbix
+    Include /etc/apache2/conf-enabled/zabbix.conf
+</VirtualHost>
+EOF3
+
+# Active la configuration Apache
+a2enconf zabbix-access
+
+# ── 6. DÉMARRAGE DES SERVICES ─────────────────────────────────
+# Redémarre les services pour appliquer toute la configuration
+systemctl restart zabbix-server zabbix-agent2 apache2
+
+# Active les services au démarrage automatique
+systemctl enable zabbix-server zabbix-agent2 apache2
+
+echo "C'est bon"

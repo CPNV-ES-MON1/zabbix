@@ -1,0 +1,3 @@
+# Afin d'éviter de donner accès aux données
+.env
+depencies.env

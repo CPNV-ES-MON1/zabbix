@@ -1,0 +1,106 @@
+title Monitoring & Ticketing Infrastructure
+direction right
+
+System Administrator [icon: user]
+End User [icon: user]
+Slack [icon: signal]
+
+CLOUD-PROVIDER {
+  REGION {
+    VPC [icon: aws-vpc] {
+      IGW [icon: aws-internet-gateway]
+
+      Bastion Host {
+        SSH Server [icon: debian]
+      }
+
+      DMZ {
+        Reverse Proxy Server [icon: nginx]
+      }
+
+      Private Subnet [color: purple, textSize: medium] {
+
+        Zabbix Monitoring Server [icon: debian, color: green] {
+          Zabbix Server [icon: server]
+          Apache Frontend [icon: apache]
+          MariaDB Database [icon: MariaDB]
+        }
+
+        Zammad Ticketing Server [color: blue, textSize: medium, icon: DOCKER] {
+          Nginx Reverse Proxy [icon: nginx]
+          Rails Server [icon: server]
+          Scheduler [icon: server]
+          Websocket Server [icon: server]
+          POSTGRESQL [icon: sql-server, label: PostgreSQL]
+          Redis [icon: Redis]
+          ELASTICSEARCH [icon: elasticsearch]
+          Memcached [icon: server]
+          Init Service [icon: server]
+        }
+
+        Linux Client [icon: debian]{
+        Zabbix Agent 2_1_1 [label: Zabbix Agent 2, icon: agent]
+        }
+        Windows Client [icon: windows]{
+        Zabbix Agent 2_1 [icon: agent, label: Zabbix Agent 2]
+        }
+
+        Docker Environment [textSize: medium, color: orange] {
+          API Gateway [icon: docker]{
+                    Zabbix Agent 2[icon: agent]
+          }
+          Container 1 [icon: docker]
+          Container 2 [icon: docker]
+        }
+      }
+      "NAT / PAT" [shape: rectangle, icon: gateway]
+    }
+  }
+}
+
+// Accès admin & utilisateurs
+System Administrator > IGW: SSH 22
+"NAT / PAT" > SSH Server: SSH 22
+SSH Server > Private Subnet: SSH 22 / RDP 3389
+System Administrator > IGW: HTTPS 443
+"NAT / PAT" > Reverse Proxy Server: HTTPS 443
+Reverse Proxy Server > Apache Frontend: HTTP 8080
+Reverse Proxy Server > Nginx Reverse Proxy: HTTP 8080
+
+// Zabbix interne
+Apache Frontend <> Zabbix Server: local
+Zabbix Server <> MariaDB Database: socket
+
+// Alertes
+Slack < IGW: TCP 443 (Websocket)
+Slack > End User: HTTPS 443
+
+// Agents
+
+// Zammad interne
+Nginx Reverse Proxy <> Rails Server: HTTP 3000
+Nginx Reverse Proxy <> Websocket Server: WebSocket 6042
+Rails Server <> POSTGRESQL: TCP 5432
+Scheduler <> POSTGRESQL: TCP 5432
+Rails Server <> Redis: TCP 6379
+Scheduler <> Redis: TCP 6379
+Websocket Server <> Redis: TCP 6379
+Rails Server <> ELASTICSEARCH: TCP 9200
+Scheduler <> ELASTICSEARCH: TCP 9200
+Rails Server <> Memcached: TCP 11211
+Scheduler <> Memcached: TCP 11211
+Zabbix Server > Zammad Ticketing Server: HTTP 8080 (Webhook)
+
+// Docker
+System Administrator > IGW: SSH 22
+System Administrator > IGW: HTTPS 443
+        API Gateway > Container 1
+        API Gateway > Container 2
+Slack > System Administrator: HTTPS 443
+Zabbix Server <> API Gateway: TCP 10050/51
+Zabbix Server <> Windows Client: TCP 10050/51
+Zabbix Server <> Linux Client: TCP 10050/51
+Zabbix Server > IGW: H
+Zabbix Server > IGW: HTTP 8080 (Webhook)
+Zabbix Server > IGW: HTTP 8080 (Webhook)
+Zabbix Server > "NAT / PAT": TCP 443 (Websocket)

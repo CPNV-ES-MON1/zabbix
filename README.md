@@ -2,62 +2,47 @@
 
 ## Description
 
-This project is designed to .... and the main features are ...
-
-## Getting Started
-
-### Prerequisites
-
-List all dependencies and their version needed to run the project as :
-
-|Role|Tool|Version|
+### Prérequis
+|Rôle|Outil|Version|
 |:--|:--|:--|
 |VCS|Git SCM|[2.54 or higher](https://git-scm.com/install/)|
 |IaC|Terraform|[1.15 or higher](https://developer.hashicorp.com/terraform/install)|
 |IDE|VS Code|[1.118 or higher](https://code.visualstudio.com/thank-you?dv=linux64_deb)|
 |Virtualization|Docker Engine|[v29 or higher](https://docs.docker.com/engine/install/)|
+### Prérequis installation Zabbix
+|Rôle|Outil|Version|Lien|
+|:--|:--|:--|:--|
+|Monitoring|Zabbix Server|7.0|[Zabbix](https://www.zabbix.com/life_cycle_and_release_policy)|
+|Database|MariaDB|10.11|[MariaDB](https://mariadb.com/docs/release-notes/community-server/10.11/what-is-mariadb-1011)|
+|Web Server|Apache|2.4|[Apache](https://httpd.apache.org/download.cgi)|
+|Language|PHP|8.2|[PHP](https://www.zabbix.com/documentation/7.0/en/manual/installation/requirements)
 
 ### Configuration
 
-* Cloud Provider Credentials
-
-You will need acces to the cloud provider including this following permissions:
-
-```
-         "ec2:DescribeInstances", 
-         "ec2:DescribeImages",
-         "ec2:DescribeTags", 
-         "ec2:DescribeSnapshots"
-```
-
-* Licence
-
-A licence need to be requested to info@myproduct.com.
-
-
 ## Deployment
-
+### Logs
 ### On dev environment
-
-* Set the environments variables
-
+Créer les scripts
 ```
-cp sample.env dev.env
+sudo nano install_depencies_env.sh
+"..." install_zabbix_env.sh
+sudo nano zabbix.env
+#Compléter les scripts et le fichier .env
 ```
+Lancer l'installation
+```
+chmod +x install_depencies_env.sh install_zabbix_env.sh
+sudo bash install_depencies_env.sh
+"..." install_zabbix_env.sh
+```
+Le script "install_zabbix_env.sh" fonctionne de paire avec le fichier "zabbix.env" contenant les valeurs nécessaires à l'installation :
 
-Update all variable according to your setup.
-
+- SERVER_NAME
+- DB_NAME
+- DB_USER
+- DB_PASSWORD
 
 ### On stage environment
-
-* Set the environments variables
-
-```
-cp sample.env stage.env
-```
-
-Update all variable according to your setup.
-
 ## Directory structure
 
 Here you are a sample of project structure. It's must be adapted to your stack.
@@ -70,11 +55,9 @@ project-root/
 ├── config/                   # configuration (per environment)
 │   ├── dev.env
 │   ├── staging.env
-│   └── prod.env
 
 ├── bin/                      # entrypoints (what you actually run)
 │   ├── deploy.sh
-│   ├── destroy.sh
 │   └── status.sh
 
 ├── lib/                      # shared logic (like "modules")
@@ -83,33 +66,13 @@ project-root/
 │   ├── checks.sh             # preflight checks
 │   └── state.sh              # poor man's state management
 
-├── services/                 # components of your stack
-│   ├── network/
-│   │   ├── create.sh
-│   │   └── destroy.sh
-│   │
-│   ├── compute/
-│   │   ├── create.sh
-│   │   └── destroy.sh
-│   │
-│   ├── monitoring/
-│   │   ├── prometheus.sh
-│   │   ├── grafana.sh
-│   │   └── alertmanager.sh
-│   │
-│   └── security/
-│       ├── iam.sh
-│       └── secrets.sh
-
-├── state/                    # local state tracking
-│   └── deployed.json
-
 ├── scripts/                  # helpers (optional)
-│   ├── install_deps.sh
-│   └── lint.sh
-
-└── logs/
-    └── deploy.log
+│   ├── zabbix_deployment
+|   ├── agent_deployment
+|       ├── linux
+|       ├── windows
+│       ├── docker
+|   └── lint.sh
 ```
 
 ## Collaborate
@@ -125,3 +88,67 @@ project-root/
 ## Contact
 
 * How to get in contact with you? Discord, Trello, Issue?
+
+## Script Agent
+# Zabbix Agent 2 — Installation
+
+## Fichiers
+
+```
+.env                              → Config Linux
+.env.windows.txt                  → Config Windows
+install_zabbix_agent_linux.sh     → Installation Linux
+validate_zabbix_linux.sh          → Validation Linux
+install_zabbix_agent_windows.ps1  → Installation Windows
+validate_zabbix_windows.ps1       → Validation Windows
+```
+
+---
+
+## Configuration
+
+Remplis le `.env` (Linux) ou `.env.windows.txt` (Windows) avec ton IP serveur, le hostname et le token API, puis ouvre le port **10050/tcp** dans le Security Group AWS de l'instance.
+
+---
+
+## Linux
+
+```bash
+# Copier les fichiers sur l'instance
+scp -i ta-cle.pem .env install_zabbix_agent_linux.sh validate_zabbix_linux.sh ec2-user@<IP>:~/
+
+# Se connecter
+ssh -i ta-cle.pem ec2-user@<IP>
+
+# Installer
+chmod +x install_zabbix_agent_linux.sh validate_zabbix_linux.sh
+sudo ./install_zabbix_agent_linux.sh
+
+# Valider
+sudo ./validate_zabbix_linux.sh
+```
+
+---
+
+## Windows
+
+```powershell
+# Ouvrir PowerShell en Administrateur
+# Se placer dans le dossier des scripts, puis :
+
+Set-ExecutionPolicy Bypass -Scope Process -Force
+.\install_zabbix_agent_windows.ps1
+
+# Valider
+.\validate_zabbix_windows.ps1
+```
+
+---
+
+## Erreurs fréquentes
+
+| Erreur | Solution |
+|---|---|
+| `Fichier .env introuvable` | Lance le script depuis le dossier où se trouve le `.env` |
+| `Port 10051 inaccessible` | Ouvre le port 10051/tcp entrant sur le Security Group du serveur Zabbix |
+| `Hôte non créé via API` | Vérifie le token dans `Administration > Users > API tokens` |
