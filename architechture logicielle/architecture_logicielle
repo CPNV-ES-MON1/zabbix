@@ -53,16 +53,17 @@ CLOUD-PROVIDER {
           Container 2 [icon: docker]
         }
       }
+      "NAT / PAT" [shape: rectangle, icon: gateway]
     }
   }
 }
 
 // Accès admin & utilisateurs
 System Administrator > IGW: SSH 22
-IGW > SSH Server: SSH 22
+"NAT / PAT" > SSH Server: SSH 22
 SSH Server > Private Subnet: SSH 22 / RDP 3389
 System Administrator > IGW: HTTPS 443
-IGW > Reverse Proxy Server: HTTPS 443
+"NAT / PAT" > Reverse Proxy Server: HTTPS 443
 Reverse Proxy Server > Apache Frontend: HTTP 8080
 Reverse Proxy Server > Nginx Reverse Proxy: HTTP 8080
 
@@ -71,7 +72,7 @@ Apache Frontend <> Zabbix Server: local
 Zabbix Server <> MariaDB Database: socket
 
 // Alertes
-Slack < IGW: HTTP 8080
+Slack < IGW: TCP 443 (Websocket)
 Slack > End User: HTTPS 443
 
 // Agents
@@ -102,4 +103,4 @@ Zabbix Server <> Linux Client: TCP 10050/51
 Zabbix Server > IGW: H
 Zabbix Server > IGW: HTTP 8080 (Webhook)
 Zabbix Server > IGW: HTTP 8080 (Webhook)
-Zabbix Server > IGW: TCP 443 (Websocket)
+Zabbix Server > "NAT / PAT": TCP 443 (Websocket)
